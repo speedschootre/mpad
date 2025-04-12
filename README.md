@@ -9,3 +9,5 @@ Enabling the "Helper" option will show all the previous positions of the red squ
 
 Play Here:
 https://speedschootre.github.io/mpad/
+Watch How to Play it:
+https://youtube.com/shorts/seLRSvPQ4I0
