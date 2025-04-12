@@ -1,4 +1,4 @@
-# mpad
+# mPad
 A working memory game based on n-backs
 
 How to Play:
