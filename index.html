@@ -64,6 +64,8 @@ let nUp = new Rect(50,50,0,0);
 let nDown = new Rect(150,50,0,0);
 let helper = new Rect(200,50,0,0);
 let help = "Off";
+let streak = 0;
+let score = 0;
 
 function draw(){
   ctx.beginPath();
@@ -72,13 +74,19 @@ function draw(){
   ctx.fill();
   ctx.closePath();
 
+  
   if (helper.clicked()) {
     if (help == "Off") {
       help = "On";
+      streak = 0;
+      score = 0;
     } else {
       help = "Off";
+      streak = 0;
+      score = 0;
     }
     helper.text = "Helper: "+help;
+    clearText = false;
   }
   helper.draw();
   nUp.draw();
@@ -86,6 +94,8 @@ function draw(){
     if (n < 7) {
       n = n+1;
       p = pick();
+      streak = 0;
+      score = 0;
     }
     clear();
     clearText = false;
@@ -94,6 +104,8 @@ function draw(){
   if (nDown.clicked()) {
     if (n > 2) {
       n = n-1;
+      streak = 0;
+      score = 0;
     }
     clear();
     clearText = false;
@@ -104,7 +116,14 @@ function draw(){
       if (i == memory[memory.length-n]) {
         let p = pick();
         clearText = true;
-      } else { clearText = false; }
+        streak += 1;
+      } else { 
+        clearText = false;
+        if (streak > score) {
+          score = streak
+        }
+        streak = 0;
+      }
     }
   }
   if ( clearText != true ) {
@@ -130,6 +149,17 @@ function draw(){
       rects[memory[memory.length-i-1]].draw();
     }
   }
+  ctx.fillStyle = "white";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = rects[0].h*0.33+"px sans-serif";
+  ctx.fillText("Streak: "+streak, rects[0].x,rects[0].y-rects[0].h*1/6,
+    rects[0].w*6,rects[0].h/2);
+  ctx.textAlign = "center";
+//  ctx.fillText("Score: "+score, rects[3].x+rects[3].w/2,rects[0].y-rects[0].h*4/5,
+  ctx.textAlign = "left";
+  ctx.fillText("Score:  "+score, rects[0].x,rects[0].y-rects[0].h*3/6,
+    rects[0].w*6,rects[0].h/2);
 }
 
 let clearText = false;
@@ -197,6 +227,14 @@ function resize () {
       bSize = w/5;
     }
   }
+
+  // Ipads/tablets
+  /*
+  if (dpr > 1 && w > 900) {
+    console.log('hahah');
+    bSize = 50*dpr;
+  }
+  */
   console.log('bsize '+bSize);
   let margin = bSize/10;
   let size = margin+bSize;
