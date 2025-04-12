@@ -1,0 +1,235 @@
+<html>
+  <head>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+  #myCanvas {
+    display: block;
+  }
+</style>
+  </head>
+
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+const canvas = document.getElementById("myCanvas");
+const ctx = canvas.getContext("2d");
+// Set the window size
+let dpr = window.devicePixelRatio || 1;
+let w = Window.innerWidth;
+let h = window.innerHeight;
+canvas.width = w*dpr;
+canvas.height = h*dpr;
+canvas.style.width = w + 'px';
+canvas.style.height = h + 'px';
+ctx.scale(dpr,dpr);
+
+mx = null;
+my = null;
+
+class Rect {
+  constructor(x, y, w, h) {
+    this.x = x; this.y = y;
+    this.w = w; this.h = h;
+    this.color = "white";
+    this.text = "";
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, this.w, this.h);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = this.h/2+"px sans-serif";
+    ctx.fillText(this.text, this.x+this.w/2, this.y+this.h/2);
+  }
+  clicked() {
+    if (mx >= this.x && mx <= this.x+this.w &&
+        my >= this.y && my <= this.y+this.h) {
+      return true;
+    } else { return false; }
+  }
+}
+let rects = [];
+for (let i=0; i<9; i++) {
+  rects[i] = new Rect(0,0,0,0);
+}
+
+let nUp = new Rect(50,50,0,0);
+let nDown = new Rect(150,50,0,0);
+let helper = new Rect(200,50,0,0);
+let help = "Off";
+
+function draw(){
+  ctx.beginPath();
+  ctx.rect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "black";
+  ctx.fill();
+  ctx.closePath();
+
+  if (helper.clicked()) {
+    if (help == "Off") {
+      help = "On";
+    } else {
+      help = "Off";
+    }
+    helper.text = "Helper: "+help;
+  }
+  helper.draw();
+  nUp.draw();
+  if (nUp.clicked()) {
+    if (n < 7) {
+      n = n+1;
+      p = pick();
+    }
+    clear();
+    clearText = false;
+  }
+  nDown.draw();
+  if (nDown.clicked()) {
+    if (n > 2) {
+      n = n-1;
+    }
+    clear();
+    clearText = false;
+  }
+
+  for (let i=0; i<9; i++) {
+    if (rects[i].clicked()) {
+      if (i == memory[memory.length-n]) {
+        let p = pick();
+        clearText = true;
+      } else { clearText = false; }
+    }
+  }
+  if ( clearText != true ) {
+    for (let i=0; i<n; i++) { rects[memory[memory.length-1-i]].text = n-i;
+    }
+  } else {
+    for (let i=0; i<n; i++) {
+      rects[memory[memory.length-1-i]].text = "";
+    }
+  }
+  for (let i=0; i<9; i++) {
+    if ( clearText ) { rects[i].text = "" }
+    if (i == memory[memory.length-1]) {
+      rects[i].color = "#FF0000";
+    } else {
+      rects[i].color = "white";
+    }
+    rects[i].draw();
+  }
+  if (help == "On") {
+    for (let i=1; i<n; i++) {
+      rects[memory[memory.length-i-1]].color = '#00CC00';
+      rects[memory[memory.length-i-1]].draw();
+    }
+  }
+}
+
+let clearText = false;
+let n = 3;
+let choices = [0,1,2,3,4,5,6,7,8];
+
+let memory = [];
+
+let p = null;
+for (let i=0; i<10; i++) {
+  p = pick();
+  //if (i < n-2) {
+  //  rects[p].text = i+1;
+  //}
+}
+resize();
+
+function clear() {
+  for (let i=0; i<9; i++) {
+    rects[i].text = "";
+  }
+}
+function pick() {
+  let pick = choices[Math.floor(Math.random()*(9-n-1))];
+  memory.push(pick);
+  let index = choices.indexOf(pick);
+  choices.push(pick);
+  choices.splice(index,1);
+  return pick;
+}
+
+window.addEventListener("mousedown", mouseDown, false);
+function mouseDown(e) {
+  mx = e.clientX;
+  my = e.clientY;
+  draw();
+}
+// Resize the window when changed
+window.addEventListener('resize', function() {
+  // If mobile orientation changes, wait for
+  // innerWidth/innerHeight to be correct
+  setTimeout(function() {
+    resize();
+  }, 250 );
+})
+function resize () {
+  dpr = window.devicePixelRatio || 1;
+  w = window.innerWidth;
+  h = window.innerHeight;
+  canvas.width = w*dpr;
+  canvas.height = h*dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr,dpr);
+  console.log("w "+w);
+  console.log("h "+h);
+
+
+  // Redraw buttons
+  let bSize = 100*dpr;
+  if (bSize*5 > w || bSize*5 > h) {
+    if (w > h) {
+      bSize = h/5;
+    } else {
+      bSize = w/5;
+    }
+  }
+  console.log('bsize '+bSize);
+  let margin = bSize/10;
+  let size = margin+bSize;
+  let i = 0;
+  for (let x=0; x<3; x++) {
+    for (let y=0; y<3; y++) {
+      rects[i].x = (w-3*size+margin)/2+x*size;
+      rects[i].y = (h-3*size+margin)/2+y*size;
+      rects[i].w = bSize; rects[i].h = bSize;
+      i += 1
+    }
+  }
+  helper.text = "Helper: "+help;
+  helper.color = "white";
+  helper.y = rects[8].y+rects[8].w+margin
+  helper.x = rects[0].x;
+  helper.w = bSize*2 //50*dpr;
+  helper.h = bSize/2 //50*dpr;
+
+  nUp.text = "+";
+  nUp.color = "white";
+  nUp.w = bSize/2 //50*dpr;
+  nUp.h = bSize/2 //50*dpr;
+  nDown.text = "-";
+  nDown.color = "white";
+  nDown.w = bSize/2 //50*dpr;
+  nDown.h = bSize/2 //50*dpr;
+  nDown.x = rects[8].x-margin
+  nDown.y = rects[8].y+rects[8].w+margin
+
+  nUp.x = rects[8].x+nDown.w
+  nUp.y = rects[8].y+rects[8].h+margin
+  draw();
+}
+</script>
+</body>
